@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mobilités Erasmus+</title>
+    <link rel="stylesheet" href="static/css/app.css" />
+  </head>
+  <body>
+    <nav class="rail" aria-label="Navigation principale">
+      <div class="rail-icon-wrap">
+        <a class="rail-icon" href="#apprenants" data-view="apprenants" aria-label="Apprenants">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>
+        </a>
+        <span class="rail-tooltip">Apprenants</span>
+      </div>
+      <div class="rail-icon-wrap">
+        <a class="rail-icon" href="#personnel" data-view="personnel" aria-label="Personnel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </a>
+        <span class="rail-tooltip">Personnel</span>
+      </div>
+      <div class="rail-icon-wrap">
+        <a class="rail-icon" href="#collectives" data-view="collectives" aria-label="Mobilités collectives">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </a>
+        <span class="rail-tooltip">Mobilités collectives</span>
+      </div>
+      <div class="rail-icon-wrap">
+        <a class="rail-icon" href="#carte" data-view="carte" aria-label="Carte et tableau">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+        </a>
+        <span class="rail-tooltip">Carte et tableau</span>
+      </div>
+    </nav>
+
+    <aside class="filters">
+      <div class="brand">
+        <img src="static/img/logo.svg" alt="" class="brand-logo" />
+        <span class="brand-name">Mobilités</span>
+      </div>
+
+      <p class="filters-count">
+        <span id="count-visible">0</span> / <span id="count-total">0</span> mobilités
+      </p>
+
+      <h2 class="filters-title">Filtres</h2>
+
+      <label class="field-label" for="filter-annee">Année de départ</label>
+      <select id="filter-annee" class="field-select">
+        <option value="">Toutes les années</option>
+      </select>
+
+      <label id="search-label" class="field-label" for="search-nom">Nom</label>
+      <input id="search-nom" class="field-input" type="search" placeholder="Commence par…" autocomplete="off" />
+
+      <label class="field-label" for="filter-etab">Établissement</label>
+      <select id="filter-etab" class="field-select">
+        <option value="">Tous les établissements</option>
+      </select>
+
+      <span class="field-label">Statut</span>
+      <div class="segmented" role="radiogroup" aria-label="Filtrer par statut d'établissement">
+        <button type="button" class="segmented-option is-active" data-filter="statut" data-value="tous" aria-pressed="true">Tous</button>
+        <button type="button" class="segmented-option" data-filter="statut" data-value="public" aria-pressed="false">Public</button>
+        <button type="button" class="segmented-option" data-filter="statut" data-value="prive" aria-pressed="false">Privé</button>
+      </div>
+
+      <label class="field-label" for="filter-pays">Pays</label>
+      <select id="filter-pays" class="field-select">
+        <option value="">Tous les pays</option>
+      </select>
+
+      <div id="bloc-consortium" class="filtre-apprenants">
+        <span class="field-label">Consortium</span>
+        <div class="segmented" role="radiogroup" aria-label="Filtrer : Consortium">
+          <button type="button" class="segmented-option is-active" data-filter="consortium" data-value="tous" aria-pressed="true">Tous</button>
+          <button type="button" class="segmented-option" data-filter="consortium" data-value="oui" aria-pressed="false">Oui</button>
+          <button type="button" class="segmented-option" data-filter="consortium" data-value="non" aria-pressed="false">Non</button>
+        </div>
+      </div>
+      <div id="bloc-aide_dger" class="filtre-apprenants">
+        <span class="field-label">Aide DGER</span>
+        <div class="segmented" role="radiogroup" aria-label="Filtrer : Aide DGER">
+          <button type="button" class="segmented-option is-active" data-filter="aide_dger" data-value="tous" aria-pressed="true">Tous</button>
+          <button type="button" class="segmented-option" data-filter="aide_dger" data-value="oui" aria-pressed="false">Oui</button>
+          <button type="button" class="segmented-option" data-filter="aide_dger" data-value="non" aria-pressed="false">Non</button>
+        </div>
+      </div>
+
+      <span class="field-label">Période de mobilité</span>
+      <div class="date-range">
+        <label class="date-range-item">
+          <span>Du</span>
+          <input id="filter-du" class="field-input" type="date" />
+        </label>
+        <label class="date-range-item">
+          <span>Au</span>
+          <input id="filter-au" class="field-input" type="date" />
+        </label>
+      </div>
+
+      <button id="btn-reset" class="field-refresh" type="button">Effacer les filtres</button>
+      <button id="btn-refresh" class="field-refresh" type="button">↻ Rafraîchir depuis Grist</button>
+
+    </aside>
+
+    <main class="content">
+      <section id="view-tuiles" class="view">
+        <header class="content-header">
+          <h1 id="titre-tuiles">Mobilités apprenants</h1>
+        </header>
+        <div id="cards" class="card-grid" aria-live="polite">
+          <p class="empty-state">Chargement des mobilités…</p>
+        </div>
+      </section>
+
+      <section id="view-carte" class="view" hidden>
+        <header class="content-header content-header--row">
+          <h1>Carte des mobilités</h1>
+          <div class="segmented segmented--inline" role="radiogroup" aria-label="Type de mobilité affiché">
+            <button type="button" class="segmented-option is-active" data-filter="type" data-value="tous" aria-pressed="true">Toutes</button>
+            <button type="button" class="segmented-option" data-filter="type" data-value="apprenants" aria-pressed="false">Apprenants</button>
+            <button type="button" class="segmented-option" data-filter="type" data-value="personnel" aria-pressed="false">Personnel</button>
+            <button type="button" class="segmented-option" data-filter="type" data-value="collectives" aria-pressed="false">Collectives</button>
+          </div>
+        </header>
+        <section class="map-panel" aria-label="Carte des pays de mobilité">
+          <svg id="map" class="map" role="img" aria-label="Pays des mobilités affichées"></svg>
+          <div class="map-controls" role="group" aria-label="Zoom de la carte">
+            <button id="zoom-in" class="map-btn" type="button" aria-label="Zoomer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            </button>
+            <button id="zoom-out" class="map-btn" type="button" aria-label="Dézoomer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+            </button>
+            <button id="zoom-fit" class="map-btn" type="button" aria-label="Recadrer sur les pays sélectionnés" title="Recadrer sur les pays sélectionnés">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div id="map-tooltip" class="map-tooltip" hidden></div>
+          <div id="map-legend" class="map-legend" hidden>
+            <span class="map-legend-titre">Mobilités</span>
+            <span id="legend-min" class="map-legend-val"></span>
+            <span class="map-legend-bar" aria-hidden="true"></span>
+            <span id="legend-max" class="map-legend-val"></span>
+          </div>
+          <p id="map-note" class="map-note" hidden></p>
+        </section>
+        <div id="table-wrap" class="table-wrap"></div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <nav class="app-footer-legal" aria-label="Informations légales">
+        <a href="#">Mentions légales</a>
+        <a href="#">Accessibilité : non conforme</a>
+      </nav>
+      <p class="app-footer-license">
+        Made by
+        <a href="https://github.com/jlllyfish" target="_blank" rel="noopener noreferrer">Jellyfish</a>
+        — Licence
+        <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener noreferrer">GPL-3.0 ↗</a>
+      </p>
+    </footer>
+
+    <div id="modal" class="modal-backdrop" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-header">
+          <h2 id="modal-title" class="modal-title"></h2>
+          <button id="modal-close" class="modal-close" type="button" aria-label="Fermer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+        <img src="static/img/error-illustration.webp" alt="" class="modal-illustration" aria-hidden="true" />
+        <ul id="modal-list" class="modal-list"></ul>
+      </div>
+    </div>
+
+    <script src="static/vendor/d3-7.9.0.min.js"></script>
+    <script src="static/vendor/topojson-client-3.min.js"></script>
+    <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+    <script src="static/js/config.js"></script>
+    <script src="static/js/data.js"></script>
+    <script src="static/js/app.js"></script>
+  </body>
+</html>

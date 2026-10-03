@@ -31,6 +31,8 @@
   const filtresBool = { consortium: "tous", aide_dger: "tous" };
   let vue = "apprenants";
   let typeCarte = "tous";
+  let reglages = null; // tables choisies dans la configuration du widget (null = défaut)
+  let charge = false;
   const carte = { paths: null, codes: new Set(), counts: {}, cle: null, fit: null };
 
   const el = {
@@ -559,7 +561,8 @@
     const label = el.btnRefresh.textContent;
     if (refresh) el.btnRefresh.textContent = "Rafraîchissement…";
     try {
-      const data = await window.MobilitesData.charger();
+      const data = await window.MobilitesData.charger(reglages);
+      charge = true;
       all = data.mobilites;
       listePays = data.pays;
       listeEtabs = data.etablissements;
@@ -609,10 +612,114 @@
   });
   window.addEventListener("hashchange", setVue);
 
-  // Accès complet requis : le widget lit six tables du document
-  grist.ready({ requiredAccess: "full", allowSelectBy: false });
+  // --- Configuration des tables (options du widget, enregistrées dans la vue Grist) ---
+
+  const TYPES_CONFIG = ["apprenants", "personnel", "collectives"];
+  const NOMS_TYPES = { apprenants: "Apprenants", personnel: "Personnel", collectives: "Mobilités collectives" };
+  const cfg = {
+    panneau: document.getElementById("config"),
+    erreur: document.getElementById("config-erreur"),
+    champ: (type, role) => document.querySelector(`.config-type[data-type="${type}"] [data-role="${role}"]`),
+  };
+
+  function remplirListe(sel, tables, valeur, avecNonUtilise) {
+    sel.innerHTML = (avecNonUtilise ? '<option value="">Non utilisé</option>' : "") +
+      tables.map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join("");
+    sel.value = valeur && tables.includes(valeur) ? valeur : avecNonUtilise ? "" : tables[0] || "";
+  }
+
+  async function ouvrirConfig(depuisDefaut) {
+    const tables = (await grist.docApi.listTables()).filter((t) => !t.startsWith("_"));
+    const base = depuisDefaut || !reglages ? window.MobilitesData.reglagesParDefaut(tables) : reglages;
+    TYPES_CONFIG.forEach((type) => {
+      const r = base[type];
+      remplirListe(cfg.champ(type, "champs"), tables, r && r.champs, true);
+      remplirListe(cfg.champ(type, "dossiers"), tables, r && r.dossiers, false);
+      cfg.champ(type, "demarche").value = r ? r.demarche : "";
+    });
+    cfg.erreur.hidden = true;
+    cfg.panneau.hidden = false;
+  }
+
+  // Choisir Demarche_72259_champs pré-remplit le n° de démarche et la table des dossiers
+  TYPES_CONFIG.forEach((type) =>
+    cfg.champ(type, "champs").addEventListener("change", (e) => {
+      const m = e.target.value.match(/^Demarche_(\d+)_/);
+      if (!m) return;
+      cfg.champ(type, "demarche").value = m[1];
+      const dossiers = cfg.champ(type, "dossiers");
+      const cible = [...dossiers.options].map((o) => o.value)
+        .find((v) => v === `Demarche_${m[1]}_dossiers` || v === `Demarche_${m[1]}_dossier`);
+      if (cible) dossiers.value = cible;
+    }),
+  );
+
+  function erreurConfig(message) {
+    cfg.erreur.textContent = message;
+    cfg.erreur.hidden = false;
+  }
+
+  async function enregistrerConfig() {
+    const nouveau = {};
+    for (const type of TYPES_CONFIG) {
+      const champs = cfg.champ(type, "champs").value;
+      if (!champs) {
+        nouveau[type] = null;
+        continue;
+      }
+      const dossiers = cfg.champ(type, "dossiers").value;
+      const demarche = parseInt(cfg.champ(type, "demarche").value, 10);
+      if (!dossiers || !demarche) {
+        erreurConfig(`${NOMS_TYPES[type]} : choisissez la table des dossiers et le n° de démarche.`);
+        return;
+      }
+      nouveau[type] = { champs, dossiers, demarche };
+    }
+    if (TYPES_CONFIG.every((t) => !nouveau[t])) {
+      erreurConfig("Au moins un type de mobilité doit être utilisé.");
+      return;
+    }
+    try {
+      await grist.setOption("tables", nouveau); // déclenche onOptions, donc le rechargement
+      cfg.panneau.hidden = true;
+    } catch (err) {
+      erreurConfig(`Enregistrement impossible (droits d'édition requis) : ${err.message}`);
+    }
+  }
+
+  // Masque les pages et boutons des types non utilisés
+  function appliquerTypesActifs() {
+    TYPES_CONFIG.forEach((type) => {
+      const actif = !reglages || !!reglages[type];
+      document.querySelector(`.rail-icon[data-view="${type}"]`).closest(".rail-icon-wrap").hidden = !actif;
+      document.querySelector(`[data-filter="type"][data-value="${type}"]`).hidden = !actif;
+      if (!actif && typeCarte === type) setTypeCarte("tous");
+    });
+    const h = location.hash.slice(1) || "apprenants";
+    if (reglages && TYPES_CONFIG.includes(h) && !reglages[h]) {
+      history.replaceState(null, "", `#${TYPES_CONFIG.find((t) => reglages[t]) || "carte"}`);
+    }
+  }
+
+  document.getElementById("btn-config").addEventListener("click", () => ouvrirConfig(false));
+  document.getElementById("config-defaut").addEventListener("click", () => ouvrirConfig(true));
+  document.getElementById("config-save").addEventListener("click", enregistrerConfig);
+  document.getElementById("config-close").addEventListener("click", () => (cfg.panneau.hidden = true));
+
+  // Accès complet requis : le widget lit plusieurs tables du document.
+  // onEditOptions ajoute le bouton « Ouvrir la configuration » dans le panneau Grist.
+  grist.ready({ requiredAccess: "full", allowSelectBy: false, onEditOptions: () => ouvrirConfig(false) });
+  grist.onOptions((options) => {
+    reglages = (options && options.tables) || null;
+    appliquerTypesActifs();
+    setVue();
+    load(false);
+  });
+  // Filet de sécurité si Grist n'envoie pas d'options au démarrage
+  setTimeout(() => {
+    if (!charge) load(false);
+  }, 1500);
 
   setVue();
-  load(false);
   initMap();
 })();

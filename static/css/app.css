@@ -1134,3 +1134,56 @@ a {
 .dsfr-table tfoot .col-participants {
   background: #fff;
 }
+
+/* --- Configuration des tables (widget) --- */
+.rail-icon-wrap--bas {
+  margin-top: auto;
+  margin-bottom: 20px;
+}
+button.rail-icon {
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.config-card {
+  max-width: 560px;
+}
+.config-body {
+  overflow-y: auto;
+  padding: 0 24px 8px;
+}
+.config-aide {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0 0 12px;
+}
+.config-type {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px 16px 16px;
+  margin: 0 0 14px;
+}
+.config-type legend {
+  font-weight: 700;
+  padding: 0 6px;
+}
+.config-erreur {
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+}
+.config-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+.config-actions .field-refresh {
+  margin: 0;
+  width: auto;
+}
+.rail-icon-wrap[hidden],
+.segmented-option[hidden] {
+  display: none;
+}

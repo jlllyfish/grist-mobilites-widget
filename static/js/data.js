@@ -105,13 +105,26 @@ window.MobilitesData = (function () {
     return JSON.stringify([m.type, ...qui, m.pays_code, m.date_depart, m.date_retour]);
   }
 
-  async function lireType(type, conf, tablesDoc) {
-    const tableChamps = `Demarche_${conf.demarche}_champs`;
-    // Table des dossiers : pluriel ou singulier selon le document
-    const tableDossiers = [`Demarche_${conf.demarche}_dossiers`, `Demarche_${conf.demarche}_dossier`]
-      .find((t) => tablesDoc.includes(t));
+  // Réglages par défaut : tables Demarche_<n>_champs / _dossiers (ou _dossier)
+  function reglagesParDefaut(tablesDoc) {
+    const r = {};
+    Object.entries(C.TYPES).forEach(([type, conf]) => {
+      const d = conf.demarche;
+      r[type] = {
+        champs: `Demarche_${d}_champs`,
+        dossiers: [`Demarche_${d}_dossiers`, `Demarche_${d}_dossier`].find((t) => tablesDoc.includes(t))
+          || `Demarche_${d}_dossiers`,
+        demarche: d,
+      };
+    });
+    return r;
+  }
+
+  async function lireType(type, conf, reglage, tablesDoc) {
+    const tableChamps = reglage.champs;
+    const tableDossiers = reglage.dossiers;
     if (!tablesDoc.includes(tableChamps)) throw new Error(`Table Grist introuvable : ${tableChamps}`);
-    if (!tableDossiers) throw new Error(`Table Grist introuvable : Demarche_${conf.demarche}_dossiers`);
+    if (!tablesDoc.includes(tableDossiers)) throw new Error(`Table Grist introuvable : ${tableDossiers}`);
 
     const [champs, dossiers] = await Promise.all([lignes(tableChamps), lignes(tableDossiers)]);
     verifierColonnes(champs, C.COLONNES_COMMUNES.concat(conf.colonnes), tableChamps);
@@ -133,7 +146,7 @@ window.MobilitesData = (function () {
 
       const m = {
         type,
-        demarche: conf.demarche,
+        demarche: reglage.demarche,
         id: `${type}-${r.id}`,
         dossier_number: n,
         state: state || "inconnu",
@@ -170,16 +183,23 @@ window.MobilitesData = (function () {
   }
 
   // Même structure que la réponse de /api/mobilites dans la version Flask
-  async function charger() {
+  // reglages = {apprenants: {champs, dossiers, demarche} | null, ...} ; null = type non utilisé
+  async function charger(reglages) {
     if (window.top === window.self) {
       throw new Error("Ce widget doit être ouvert dans Grist (widget personnalisé, accès complet).");
     }
     const tablesDoc = await grist.docApi.listTables();
+    const regl = reglages || reglagesParDefaut(tablesDoc);
     let mobilites = [];
     const exclus = {};
     const sans_etat = {};
     for (const [type, conf] of Object.entries(C.TYPES)) {
-      const r = await lireType(type, conf, tablesDoc);
+      if (!regl[type]) {
+        exclus[type] = { sans_suite: 0, refuse: 0, doublons: 0 };
+        sans_etat[type] = [];
+        continue;
+      }
+      const r = await lireType(type, conf, regl[type], tablesDoc);
       mobilites = mobilites.concat(r.liste);
       exclus[type] = r.exclus;
       sans_etat[type] = r.sansEtat;
@@ -198,5 +218,5 @@ window.MobilitesData = (function () {
     };
   }
 
-  return { charger };
+  return { charger, reglagesParDefaut };
 })();

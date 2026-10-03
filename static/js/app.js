@@ -280,7 +280,8 @@
   const GRIS_CLAIR = C.GRIS_CLAIR;
   const GRIS_FONCE = C.GRIS_FONCE;
   const MAP_W = 960;
-  const MAP_H = 440;
+  // Sur écran étroit (portrait), carte plus haute pour rester lisible
+  const MAP_H = window.innerWidth <= 820 ? 720 : 440;
   // Réglages du cadrage automatique
   const ZOOM_MAX = C.ZOOM_MAX;
   const ZOOM_AUTO_MAX = C.ZOOM_AUTO_MAX;
@@ -359,17 +360,27 @@
         .join("path")
         .attr("class", "country")
         .attr("d", path)
-        .on("mousemove", (event, f) => {
-          const n = carte.counts[f.properties.iso2] || 0;
-          tooltip.textContent = n
-            ? `${f.properties.nom} : ${n} mobilité${n > 1 ? "s" : ""}`
-            : f.properties.nom;
-          const box = tooltip.parentElement.getBoundingClientRect();
-          tooltip.style.left = `${event.clientX - box.left + 12}px`;
-          tooltip.style.top = `${event.clientY - box.top + 12}px`;
-          tooltip.hidden = false;
-        })
-        .on("mouseleave", () => (tooltip.hidden = true));
+        .on("mousemove", afficherInfobulle)
+        .on("mouseleave", () => (tooltip.hidden = true))
+        // Sur écran tactile, pas de survol : un appui affiche l'infobulle quelques secondes
+        .on("click", (event, f) => {
+          afficherInfobulle(event, f);
+          clearTimeout(carte.minuteur);
+          carte.minuteur = setTimeout(() => (tooltip.hidden = true), 2500);
+        });
+
+      function afficherInfobulle(event, f) {
+        const n = carte.counts[f.properties.iso2] || 0;
+        tooltip.textContent = n
+          ? `${f.properties.nom} : ${n} mobilité${n > 1 ? "s" : ""}`
+          : f.properties.nom;
+        const box = tooltip.parentElement.getBoundingClientRect();
+        // Infobulle gardée dans le cadre de la carte sur écran étroit
+        const x = Math.min(event.clientX - box.left + 12, box.width - tooltip.offsetWidth - 8);
+        tooltip.style.left = `${Math.max(8, x)}px`;
+        tooltip.style.top = `${event.clientY - box.top + 12}px`;
+        tooltip.hidden = false;
+      }
       if (vue === "carte") updateMap();
     } catch (err) {
       showModal("Carte indisponible", [err.message]);
@@ -510,6 +521,7 @@
     visibles = all.filter((m) => matches(m));
     const t = typeActif();
     el.countVisible.textContent = visibles.length;
+    majBarreMobile();
     // Total = mobilités du type affiché, limitées à l'année choisie s'il y en a une
     const annee = el.annee.value;
     el.countTotal.textContent = all.filter((m) =>
@@ -522,7 +534,35 @@
     }
   }
 
+  // --- Mobile : panneau de filtres par-dessus le contenu ---
+
+  function nbFiltresActifs() {
+    let n = [el.annee, el.search, el.pays, el.etab, el.du, el.au].filter((x) => x.value).length;
+    if (filtreStatut !== "tous") n += 1;
+    if (typeActif() === "apprenants") n += Object.values(filtresBool).filter((v) => v !== "tous").length;
+    return n;
+  }
+
+  function majBarreMobile() {
+    const n = nbFiltresActifs();
+    const badge = document.getElementById("nb-filtres");
+    badge.hidden = n === 0;
+    badge.textContent = n;
+    document.getElementById("mobile-count").textContent = visibles.length;
+    document.getElementById("nb-resultats").textContent = visibles.length;
+  }
+
+  function ouvrirFiltres(ouvert) {
+    document.body.classList.toggle("filtres-ouverts", ouvert);
+    document.getElementById("btn-filtres").setAttribute("aria-expanded", String(ouvert));
+    if (ouvert) document.getElementById("filtres").scrollTop = 0;
+  }
+
+  document.getElementById("btn-filtres").addEventListener("click", () => ouvrirFiltres(true));
+  document.getElementById("btn-voir-resultats").addEventListener("click", () => ouvrirFiltres(false));
+
   function setVue() {
+    ouvrirFiltres(false);
     const h = location.hash.slice(1);
     vue = h === "carte" || VUES_TUILES[h] ? h : "apprenants";
     document.getElementById("view-tuiles").hidden = vue === "carte";

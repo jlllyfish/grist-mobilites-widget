@@ -1187,3 +1187,217 @@ button.rail-icon {
 .segmented-option[hidden] {
   display: none;
 }
+
+/* =====================================================================
+   Mobile (smartphone, widget Grist étroit) — placé en fin de fichier
+   pour l'emporter sur les règles précédentes
+   ===================================================================== */
+.mobile-bar,
+.filters-voir {
+  display: none;
+}
+
+@media (max-width: 820px) {
+  body {
+    display: block;
+    min-height: 100vh;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Rail -> barre de navigation fixe en bas */
+  .rail {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    gap: 0;
+    height: 64px;
+    padding: 0 8px env(safe-area-inset-bottom, 0px);
+    border-right: none;
+    border-top: 1px solid var(--border);
+  }
+  .rail-icon-wrap--bas {
+    margin: 0;
+  }
+  .rail-tooltip {
+    display: none;
+  }
+
+  /* Filtres -> panneau plein écran ouvert par le bouton « Filtres » */
+  .filters {
+    display: none;
+    position: fixed;
+    inset: 0 0 64px 0;
+    z-index: 50;
+    border: none;
+    padding: 20px 16px 0;
+    overflow-y: auto;
+  }
+  body.filtres-ouverts .filters {
+    display: flex;
+  }
+  body.filtres-ouverts {
+    overflow: hidden;
+  }
+  .filters-voir {
+    display: flex;
+    justify-content: center;
+    position: sticky;
+    bottom: 0;
+    margin: 20px -16px 0;
+    border-radius: 0;
+    padding: 16px;
+    font-size: 15px;
+  }
+
+  /* Barre du haut : bouton Filtres + compteur */
+  .mobile-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    margin: -16px -16px 16px;
+    padding: 10px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-filtres {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .mobile-filtres svg {
+    width: 16px;
+    height: 16px;
+  }
+  .mobile-badge {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: var(--radius-full);
+    background: var(--ink);
+    color: #fff;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mobile-badge[hidden] {
+    display: none;
+  }
+  .mobile-count {
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .mobile-count strong {
+    color: var(--ink);
+  }
+
+  .filters .brand,
+  .filters .filters-count {
+    display: none;
+  }
+  .filters .filters-title {
+    margin-top: 0;
+  }
+  /* 16 px minimum : évite le zoom automatique d'iOS sur les champs */
+  .field-select,
+  .field-input {
+    font-size: 16px;
+  }
+
+  /* Contenu */
+  .content {
+    padding: 16px 12px 24px;
+    overflow: visible;
+  }
+  .content-header h1 {
+    font-size: 22px;
+    line-height: 1.2;
+    margin: 0 0 14px;
+  }
+  .content-header--row {
+    margin-bottom: 14px;
+  }
+  .segmented--inline {
+    min-width: 0;
+    width: 100%;
+  }
+  .segmented--inline .segmented-option {
+    font-size: 12px;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Carte */
+  .map-panel {
+    padding: 6px;
+    margin-bottom: 16px;
+  }
+  .map-controls {
+    top: 10px;
+    right: 10px;
+  }
+  .map-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .map-legend {
+    position: static;
+    margin: 6px 4px 2px;
+    width: fit-content;
+  }
+  .map-legend-bar {
+    width: 80px;
+  }
+
+  /* Tableau */
+  .table-wrap {
+    padding: 8px;
+  }
+  .dsfr-table {
+    font-size: 13px;
+  }
+  .dsfr-table th,
+  .dsfr-table td {
+    padding: 8px;
+  }
+
+  /* Pied de page et fenêtres */
+  .app-footer {
+    padding: 14px 16px;
+  }
+  .modal-backdrop {
+    padding: 12px;
+  }
+  .config-card,
+  .modal-card {
+    max-height: calc(100vh - 24px);
+  }
+  .config-body {
+    padding: 0 16px 8px;
+  }
+  .config-actions {
+    padding: 12px 16px;
+  }
+}

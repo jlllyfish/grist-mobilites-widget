@@ -1310,7 +1310,8 @@ button.rail-icon {
   }
 
   .filters .brand,
-  .filters .filters-count {
+  .filters .filters-count,
+  .filters .filters-pct {
     display: none;
   }
   .filters .filters-title {
@@ -1427,4 +1428,12 @@ button.rail-icon {
 }
 .field-input::placeholder {
   -webkit-text-fill-color: var(--ink-soft);
+}
+
+/* Pourcentage sous le compteur */
+.filters-pct {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
 }

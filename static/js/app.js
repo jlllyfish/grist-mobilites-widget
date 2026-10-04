@@ -524,8 +524,13 @@
     majBarreMobile();
     // Total = mobilités du type affiché, limitées à l'année choisie s'il y en a une
     const annee = el.annee.value;
-    el.countTotal.textContent = all.filter((m) =>
+    const total = all.filter((m) =>
       (t === "tous" || m.type === t) && (!annee || (m.date_depart || "").slice(0, 4) === annee)).length;
+    el.countTotal.textContent = total;
+    // Part des mobilités affichées, ex : 72,8 %
+    document.getElementById("count-pct").textContent = total
+      ? `${(visibles.length / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`
+      : "";
     if (vue !== "carte") {
       renderCards();
     } else {

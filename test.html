@@ -4,10 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Test iframe Grist</title>
+<style>
+  html, body { margin: 0; height: 100%; }
+
+  /* Cadre plein écran qui rogne le haut de l'iframe */
+  .grist-frame { position: relative; width: 100%; height: 100vh; overflow: hidden; }
+  .grist-frame iframe {
+    position: absolute; left: 0; width: 100%; border: 0;
+    top: -36px;                 /* hauteur de la barre de titre Grist à masquer : à ajuster */
+    height: calc(100% + 36px);
+  }
+</style>
 </head>
-<body style="margin:0;">
-  <iframe
-    src="https://grist.numerique.gouv.fr/o/srfd-occ/pqQC5C2B6nDA/Catalogue-Demarches?embed=true"
-    width="100%" height="900" style="border:0;"></iframe>
+<body>
+  <div class="grist-frame">
+    <iframe src="https://grist.numerique.gouv.fr/o/srfd-occ/pqQC5C2B6nDA/Catalogue-Demarches?embed=true"></iframe>
+  </div>
 </body>
 </html>

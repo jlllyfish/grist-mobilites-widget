@@ -375,6 +375,22 @@ a {
   border-color: rgba(220, 38, 38, 0.35);
 }
 
+/* Rail et filtres fixes pendant le défilement (hors mobile) */
+@media (min-width: 821px) {
+  .rail,
+  .filters {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    height: 100dvh;
+    box-sizing: border-box;
+  }
+  .rail {
+    z-index: 20; /* infobulles au-dessus du volet filtres */
+  }
+}
+
 /* --- Contenu principal --- */
 .content {
   grid-column: 3;

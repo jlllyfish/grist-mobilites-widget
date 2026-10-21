@@ -213,9 +213,10 @@
   const argentIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>`;
 
   // Indicateur toujours présent : en couleur si vrai, grisé sinon
-  function indicateur(actif, icone, texte, classe) {
-    return `<span class="flag ${actif ? `flag--on ${classe}` : ""}" title="${texte} : ${actif ? "oui" : "non"}">
-              ${icone}<span>${texte}</span><span class="sr-only"> : ${actif ? "oui" : "non"}</span>
+  function indicateur(actif, icone, texte, classe, etats = ["oui", "non"]) {
+    const etat = actif ? etats[0] : etats[1];
+    return `<span class="flag ${actif ? `flag--on ${classe}` : ""}" title="${texte} : ${etat}">
+              ${icone}<span>${texte}</span><span class="sr-only"> : ${etat}</span>
             </span>`;
   }
 
@@ -246,7 +247,7 @@
       if (m.type === "apprenants") {
         extra = `<div class="card-flags">
             ${indicateur(m.consortium, consortiumIcon, "Consortium", "flag--consortium")}
-            ${indicateur(m.aide_dger, argentIcon, "Aide DGER", "flag--dger")}
+            ${m.aide_dger ? indicateur(m.aide_dger_montant, argentIcon, "Aide DGER", "flag--dger", ["montant accordé", "demandée, montant non renseigné"]) : ""}
           </div>`;
       }
       if (m.type === "personnel" && m.objet) {

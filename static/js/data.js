@@ -86,7 +86,6 @@ window.MobilitesData = (function () {
       return {
         nom, prenom, initiales: initiales(nom, prenom),
         consortium: vrai(r.mobilite_consortium_erasmus),
-        aide_dger: vrai(r.demande_d_aide_a_la_mobilite_dger_prevue),
       };
     }
     if (type === "personnel") {
@@ -169,6 +168,55 @@ window.MobilitesData = (function () {
     return { liste: [...retenues.values()], exclus, sansEtat };
   }
 
+  // --- Aide DGER (démarche 70017) ---
+
+  // Identifiant de colonne Grist : "Dossier mobilité individuelle" -> "dossier_mobilite_individuelle"
+  const cleColonne = (s) => sansAccents(String(s)).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+
+  function trouverColonne(rows, nom) {
+    const cible = cleColonne(nom);
+    return Object.keys(rows[0] || {}).find((c) => cleColonne(c) === cible) || null;
+  }
+
+  // Numéros de dossier contenus dans la cellule (nombre, texte ou liste)
+  function numerosDossier(v) {
+    if (v === null || v === undefined || v === "") return [];
+    if (Array.isArray(v)) return v.slice(v[0] === "L" ? 1 : 0).flatMap(numerosDossier);
+    if (typeof v === "number") return [num(v)];
+    return txt(v).match(/\d+/g) || [];
+  }
+
+  // Montant renseigné : nombre > 0, ou texte non vide (hors valeur nulle)
+  function montantPositif(v) {
+    if (v === null || v === undefined) return false;
+    if (typeof v === "number") return v > 0;
+    const t = txt(v);
+    if (!t) return false;
+    const n = parseFloat(t.replace(/[\s\u00a0\u202f€]/g, "").replace(",", "."));
+    return Number.isFinite(n) ? n > 0 : true;
+  }
+
+  // Map numéro de dossier apprenant -> montant accordé (true/false)
+  async function lireAideDger(tablesDoc) {
+    const conf = C.AIDE_DGER;
+    const aides = new Map();
+    if (!conf || !tablesDoc.includes(conf.table)) {
+      console.warn(`Aide DGER : table ${conf && conf.table} introuvable, tags masqués.`);
+      return aides;
+    }
+    const rows = await lignes(conf.table);
+    if (!rows.length) return aides;
+    const colDossier = trouverColonne(rows, conf.colonneDossier);
+    const colMontant = trouverColonne(rows, conf.colonneMontant);
+    if (!colDossier) throw new Error(`Colonne absente de ${conf.table} : ${conf.colonneDossier}`);
+    if (!colMontant) console.warn(`Aide DGER : colonne ${conf.colonneMontant} absente de ${conf.table}.`);
+    rows.forEach((r) => {
+      const ok = colMontant ? montantPositif(r[colMontant]) : false;
+      numerosDossier(r[colDossier]).forEach((n) => aides.set(n, aides.get(n) || ok));
+    });
+    return aides;
+  }
+
   function listePays(mobilites) {
     const pays = new Map();
     mobilites.forEach((m) => m.pays_code && pays.set(m.pays_code, m.pays_nom));
@@ -200,6 +248,13 @@ window.MobilitesData = (function () {
         continue;
       }
       const r = await lireType(type, conf, regl[type], tablesDoc);
+      if (type === "apprenants") {
+        const aides = await lireAideDger(tablesDoc);
+        r.liste.forEach((m) => {
+          m.aide_dger = aides.has(m.dossier_number); // aide demandée
+          m.aide_dger_montant = aides.get(m.dossier_number) === true; // montant > 0
+        });
+      }
       mobilites = mobilites.concat(r.liste);
       exclus[type] = r.exclus;
       sans_etat[type] = r.sansEtat;

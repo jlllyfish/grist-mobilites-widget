@@ -11,11 +11,17 @@ window.CONFIG = {
   TYPES: {
     apprenants: {
       demarche: 70018,
-      colonnes: ["nom_apprenant", "prenom_apprenant", "mobilite_consortium_erasmus",
-        "demande_d_aide_a_la_mobilite_dger_prevue"],
+      colonnes: ["nom_apprenant", "prenom_apprenant", "mobilite_consortium_erasmus"],
     },
     personnel: { demarche: 72259, colonnes: ["nom", "prenom", "objet_de_la_mobilite"] },
     collectives: { demarche: 70020, colonnes: ["niveau_de_formation", "effectif_total"] },
+  },
+  // Aide DGER (démarche 70017) : demandée si le dossier de mobilité individuelle
+  // de l'apprenant y figure, accordée (tag vert) si le montant est renseigné et > 0
+  AIDE_DGER: {
+    table: "Demarche_70017_champs",
+    colonneDossier: "Dossier mobilité individuelle",
+    colonneMontant: "Montant_aide_Dger",
   },
   ETATS_EXCLUS: ["sans_suite", "refuse"],
 
